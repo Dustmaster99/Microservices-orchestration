@@ -1,0 +1,12 @@
+# Terraform directories
+**/.terraform/*       # Ignora qualquer .terraform em qualquer pasta
+.terraform.lock.hcl   # Lockfile pode ser opcionalmente versionado, mas muitos ignoram
+*.tfstate             # Arquivos de estado
+*.tfstate.*           # Backups de estado
+crash.log             # Logs de crash do Terraform
+
+# Overrides
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json

@@ -1,0 +1,15 @@
+[submodule "auth-service"]
+	path = auth-service
+	url = https://github.com/Dustmaster99/auth-service.git
+[submodule "evaluation-service"]
+	path = evaluation-service
+	url = https://github.com/Dustmaster99/evaluation-service.git
+[submodule "flag-service"]
+	path = flag-service
+	url = https://github.com/Dustmaster99/flag-service.git
+[submodule "analytics-service"]
+	path = analytics-service
+	url = https://github.com/Dustmaster99/analytics-service.git
+[submodule "targeting-service"]
+	path = targeting-service
+	url = https://github.com/Dustmaster99/targeting-service.git

@@ -1,0 +1,81 @@
+services:
+  # Serviço de Autenticação em Go
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./auth-service/.env  # ou apenas .env se estiver dentro da pasta
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Serviço de Flags em Python
+  flag-service:  # Nome do serviço
+    build: ./flag-service  
+    container_name: flag-service  # Nome do container
+    ports:
+      - "8002:8002"
+    env_file:
+      - ./flag-service/.env  
+    networks:
+      - app-network
+    depends_on:
+      - auth-service
+    restart: unless-stopped
+# Targeting service em python
+  targeting-service:
+    build: ./targeting-service
+    container_name: targeting-service # Nome do container
+    ports:
+      - "8003:8003"
+    env_file:
+      - ./targeting-service/.env
+    networks:
+      - app-network
+    depends_on:
+      - auth-service
+    restart: unless-stopped
+# Serviço Redis
+  redis-service:
+    image: redis:7
+    container_name: redis-service
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+# Evaluation service em go
+  evaluation-service:
+    build: ./evaluation-service
+    container_name: evaluation-service
+    ports:
+      - "8004:8004"
+    env_file:
+      - ./evaluation-service/.env
+    networks:
+      - app-network
+    depends_on:
+      - auth-service
+      - flag-service
+      - targeting-service
+      - redis-service
+    restart: unless-stopped
+  #analytics service em python
+  analytics-service:
+    build: ./analytics-service
+    container_name: analytics-service
+    ports:
+      - "8005:8005"
+    env_file:
+      - ./analytics-service/.env
+    networks:
+      - app-network
+    depends_on:
+      - evaluation-service
+    restart: unless-stopped
+networks:
+  app-network:
+    driver: bridge
