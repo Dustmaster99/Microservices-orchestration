@@ -1,0 +1,42 @@
+resource "kubernetes_manifest" "alpine_tools" {
+  manifest = {
+    apiVersion = "v1"
+    kind       = "Pod"
+    metadata = {
+      name      = "alpine-tools"
+      namespace = "fiap-microservices"
+    }
+    spec = {
+      containers = [
+        {
+          name  = "alpine"
+          image = "alpine:3.19"
+          command = [
+            "sh",
+            "-c",
+            "apk add --no-cache curl postgresql-client bind-tools iputils && echo 'Ferramentas instaladas. Pod pronto.' && sleep 3600"
+          ]
+          env = [
+            {
+              name  = "PGPASSWORD"
+              value = "rootroot"
+            }
+          ]
+          resources = {
+            requests = {
+              cpu    = "100m"
+              memory = "128Mi"
+            }
+            limits = {
+              cpu    = "200m"
+              memory = "256Mi"
+            }
+          }
+        }
+      ]
+      restartPolicy = "Never"
+    }
+  }
+
+  depends_on = [kubernetes_manifest.fiap_microservices_namespace]
+}

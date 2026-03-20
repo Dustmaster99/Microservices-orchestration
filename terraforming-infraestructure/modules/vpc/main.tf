@@ -16,9 +16,12 @@ resource "aws_vpc" "main" {
   enable_dns_support = true
 
   # Tags usadas para identificação dos recursos na AWS
-  tags = {
-    Name = "${var.project_name}-vpc"
-  }
+  tags = merge(
+    {
+      Name = "${var.project_name}-vpc"
+    },
+    var.tags
+  )
 }
 
 
@@ -33,9 +36,12 @@ resource "aws_internet_gateway" "igw" {
   # Associa o gateway à VPC criada acima
   vpc_id = aws_vpc.main.id
 
-  tags = {
-    Name = "${var.project_name}-igw"
-  }
+  tags = merge(
+    {
+      Name = "${var.project_name}-igw"
+    },
+    var.tags
+  )
 }
 
 
@@ -62,9 +68,13 @@ resource "aws_subnet" "public" {
   # Faz com que instâncias recebam IP público automaticamente
   map_public_ip_on_launch = true
 
-  tags = {
-    Name = "${var.project_name}-public-${count.index}"
-  }
+  tags = merge(
+    {
+      Name                     = "${var.project_name}-public-${count.index}"
+      "kubernetes.io/role/elb" = "1"
+    },
+    var.tags
+  )
 }
 
 
@@ -88,9 +98,13 @@ resource "aws_subnet" "private" {
   # Zona de disponibilidade da subnet
   availability_zone = var.availability_zones[count.index]
 
-  tags = {
-    Name = "${var.project_name}-private-${count.index}"
-  }
+  tags = merge(
+    {
+      Name                              = "${var.project_name}-private-${count.index}"
+      "kubernetes.io/role/internal-elb" = "1"
+    },
+    var.tags
+  )
 }
 
 
@@ -107,6 +121,13 @@ resource "aws_eip" "nat" {
 
   # Indica que o IP será usado dentro de uma VPC
   domain = "vpc"
+
+  tags = merge(
+    {
+      Name = "${var.project_name}-eip-nat-${count.index}"
+    },
+    var.tags
+  )
 }
 
 
@@ -128,9 +149,12 @@ resource "aws_nat_gateway" "nat" {
   # Subnet pública onde o NAT será criado
   subnet_id = aws_subnet.public[count.index].id
 
-  tags = {
-    Name = "${var.project_name}-nat-${count.index}"
-  }
+  tags = merge(
+    {
+      Name = "${var.project_name}-nat-${count.index}"
+    },
+    var.tags
+  )
 
   # Garante que o Internet Gateway seja criado antes
   depends_on = [aws_internet_gateway.igw]
@@ -155,9 +179,12 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  tags = {
-    Name = "${var.project_name}-public-rt"
-  }
+  tags = merge(
+    {
+      Name = "${var.project_name}-public-rt"
+    },
+    var.tags
+  )
 }
 
 
@@ -196,9 +223,12 @@ resource "aws_route_table" "private" {
     nat_gateway_id = aws_nat_gateway.nat[count.index].id
   }
 
-  tags = {
-    Name = "${var.project_name}-private-rt-${count.index}"
-  }
+  tags = merge(
+    {
+      Name = "${var.project_name}-private-rt-${count.index}"
+    },
+    var.tags
+  )
 }
 
 
