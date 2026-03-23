@@ -1,3 +1,4 @@
+
 resource "kubernetes_manifest" "ingress_nginx_service_account" {
   manifest = {
     apiVersion = "v1"
@@ -21,13 +22,8 @@ resource "kubernetes_manifest" "ingress_nginx_cluster_role" {
     rules = [
       {
         apiGroups = [""]
-        resources = ["configmaps", "endpoints", "nodes", "pods", "secrets", "services"]
-        verbs     = ["list", "watch"]
-      },
-      {
-        apiGroups = [""]
-        resources = ["nodes"]
-        verbs     = ["get"]
+        resources = ["configmaps", "endpoints", "nodes", "pods", "secrets", "services", "namespaces"]
+        verbs     = ["get", "list", "watch"]
       },
       {
         apiGroups = [""]
@@ -47,7 +43,7 @@ resource "kubernetes_manifest" "ingress_nginx_cluster_role" {
       {
         apiGroups = ["discovery.k8s.io"]
         resources = ["endpointslices"]
-        verbs     = ["list", "watch", "get"]
+        verbs     = ["get", "list", "watch"]
       }
     ]
   }
@@ -80,6 +76,107 @@ resource "kubernetes_manifest" "ingress_nginx_cluster_role_binding" {
     kubernetes_manifest.ingress_nginx_service_account,
     kubernetes_manifest.ingress_nginx_cluster_role
   ]
+}
+
+resource "kubernetes_manifest" "ingress_nginx_role" {
+  manifest = {
+    apiVersion = "rbac.authorization.k8s.io/v1"
+    kind       = "Role"
+    metadata = {
+      name      = "ingress-nginx"
+      namespace = "ingress-nginx"
+    }
+    rules = [
+      {
+        apiGroups = [""]
+        resources = ["configmaps", "pods", "secrets", "endpoints"]
+        verbs     = ["get"]
+      },
+      {
+        apiGroups     = [""]
+        resources     = ["configmaps"]
+        resourceNames = ["ingress-nginx-controller"]
+        verbs         = ["get", "update"]
+      },
+      {
+        apiGroups = [""]
+        resources = ["events"]
+        verbs     = ["create", "patch"]
+      },
+      {
+        apiGroups = ["coordination.k8s.io"]
+        resources = ["leases"]
+        verbs     = ["get", "create", "update"]
+      }
+    ]
+  }
+
+  depends_on = [kubernetes_manifest.ingress_nginx_namespace]
+}
+
+resource "kubernetes_manifest" "ingress_nginx_role_binding" {
+  manifest = {
+    apiVersion = "rbac.authorization.k8s.io/v1"
+    kind       = "RoleBinding"
+    metadata = {
+      name      = "ingress-nginx"
+      namespace = "ingress-nginx"
+    }
+    roleRef = {
+      apiGroup = "rbac.authorization.k8s.io"
+      kind     = "Role"
+      name     = "ingress-nginx"
+    }
+    subjects = [
+      {
+        kind      = "ServiceAccount"
+        name      = "ingress-nginx"
+        namespace = "ingress-nginx"
+      }
+    ]
+  }
+
+  depends_on = [
+    kubernetes_manifest.ingress_nginx_service_account,
+    kubernetes_manifest.ingress_nginx_role
+  ]
+}
+
+resource "kubernetes_manifest" "ingress_nginx_service" {
+  manifest = {
+    apiVersion = "v1"
+    kind       = "Service"
+    metadata = {
+      name      = "ingress-nginx-controller"
+      namespace = "ingress-nginx"
+      annotations = {
+        "service.beta.kubernetes.io/aws-load-balancer-scheme" = "internet-facing"
+        "service.beta.kubernetes.io/aws-load-balancer-type"   = "nlb"
+      }
+    }
+    spec = {
+      type = "LoadBalancer"
+      selector = {
+        "app.kubernetes.io/name" = "ingress-nginx"
+      }
+      ports = [
+        {
+          name       = "http"
+          port       = 80
+          targetPort = 80
+          protocol   = "TCP"
+        },
+        {
+          name       = "https"
+          port       = 443
+          targetPort = 443
+          protocol   = "TCP"
+        }
+      ]
+    }
+  }
+
+  depends_on = [kubernetes_manifest.ingress_nginx_namespace]
 }
 
 resource "kubernetes_manifest" "ingress_nginx_controller" {
@@ -152,99 +249,8 @@ resource "kubernetes_manifest" "ingress_nginx_controller" {
 
   depends_on = [
     kubernetes_manifest.ingress_nginx_service_account,
-    kubernetes_manifest.ingress_nginx_cluster_role_binding
-  ]
-}
-
-resource "kubernetes_manifest" "ingress_nginx_service" {
-  manifest = {
-    apiVersion = "v1"
-    kind       = "Service"
-    metadata = {
-      name      = "ingress-nginx-controller"
-      namespace = "ingress-nginx"
-      annotations = {
-        "service.beta.kubernetes.io/aws-load-balancer-type"     = "nlb"
-        "service.beta.kubernetes.io/aws-load-balancer-internal" = "false"
-        "service.beta.kubernetes.io/aws-load-balancer-subnets"  = join(",", var.public_subnet_ids)
-      }
-    }
-    spec = {
-      type = "LoadBalancer"
-      selector = {
-        "app.kubernetes.io/name" = "ingress-nginx"
-      }
-      ports = [
-        {
-          name       = "http"
-          port       = 80
-          targetPort = 80
-          protocol   = "TCP"
-        },
-        {
-          name       = "https"
-          port       = 443
-          targetPort = 443
-          protocol   = "TCP"
-        }
-      ]
-    }
-  }
-
-  depends_on = [kubernetes_manifest.ingress_nginx_controller]
-}
-
-resource "kubernetes_manifest" "ingress_nginx_class" {
-  manifest = {
-    apiVersion = "networking.k8s.io/v1"
-    kind       = "IngressClass"
-    metadata = {
-      name = "nginx"
-    }
-    spec = {
-      controller = "k8s.io/ingress-nginx"
-    }
-  }
-
-  depends_on = [kubernetes_manifest.ingress_nginx_controller]
-}
-
-resource "kubernetes_manifest" "evaluation_ingress" {
-  manifest = {
-    apiVersion = "networking.k8s.io/v1"
-    kind       = "Ingress"
-    metadata = {
-      name      = "evaluation-ingress"
-      namespace = "fiap-microservices"
-    }
-    spec = {
-      ingressClassName = "nginx"
-      rules = [
-        {
-          http = {
-            paths = [
-              {
-                path     = "/"
-                pathType = "Prefix"
-                backend = {
-                  service = {
-                    name = "evaluation-service"
-                    port = {
-                      number = 8004
-                    }
-                  }
-                }
-              }
-            ]
-          }
-        }
-      ]
-    }
-  }
-
-  depends_on = [
-    kubernetes_manifest.ingress_nginx_service,
-    kubernetes_manifest.ingress_nginx_class,
-    kubernetes_manifest.fiap_microservices_namespace
+    kubernetes_manifest.ingress_nginx_cluster_role_binding,
+    kubernetes_manifest.ingress_nginx_role_binding,
+    kubernetes_manifest.ingress_nginx_service
   ]
 }

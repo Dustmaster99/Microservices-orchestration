@@ -4,24 +4,37 @@ locals {
   evaluation_image = "${var.ecr_registry}/evaluation-service:${var.image_tag}"
   flag_image       = "${var.ecr_registry}/flag-service:${var.image_tag}"
   targeting_image  = "${var.ecr_registry}/targeting-service:${var.image_tag}"
-  redis_image      = "${var.ecr_registry}/redis:${var.image_tag}"
+  redis_image = "${var.ecr_registry}/redis:${var.image_tag_redis}"
 }
 
-resource "kubernetes_manifest" "analytics_secret" {
-  manifest = {
-    apiVersion = "v1"
-    kind       = "Secret"
-    metadata = {
-      name      = "analytics-secret"
-      namespace = var.namespace
-    }
-    type = "Opaque"
-    stringData = {
-      PORT               = "8005"
-      AWS_SQS_URL        = var.analytics_aws_sqs_url
-      AWS_DYNAMODB_TABLE = var.analytics_dynamodb_table
-      AWS_REGION         = var.aws_region
-    }
+resource "kubernetes_secret_v1" "aws_credentials" {
+  metadata {
+    name      = "aws-credentials"
+    namespace = var.namespace
+  }
+
+  type = "Opaque"
+
+  data = {
+    AWS_ACCESS_KEY_ID     = var.aws_access_key_id
+    AWS_SECRET_ACCESS_KEY = var.aws_secret_access_key
+    AWS_SESSION_TOKEN     = var.aws_session_token
+  }
+}
+
+resource "kubernetes_secret_v1" "analytics_secret" {
+  metadata {
+    name      = "analytics-secret"
+    namespace = var.namespace
+  }
+
+  type = "Opaque"
+
+  data = {
+    PORT               = tostring(var.analytics_service_port)
+    AWS_SQS_URL = var.sqs_url
+    AWS_DYNAMODB_TABLE = var.analytics_dynamodb_table
+    AWS_REGION         = var.aws_region
   }
 }
 
@@ -30,30 +43,30 @@ resource "kubernetes_manifest" "analytics_deployment" {
     apiVersion = "apps/v1"
     kind       = "Deployment"
     metadata = {
-      name      = "analytics-service"
+      name      = var.analytics_service_name
       namespace = var.namespace
     }
     spec = {
       replicas = 1
       selector = {
         matchLabels = {
-          app = "analytics-service"
+          app = var.analytics_service_name
         }
       }
       template = {
         metadata = {
           labels = {
-            app = "analytics-service"
+            app = var.analytics_service_name
           }
         }
         spec = {
           containers = [
             {
-              name  = "analytics-service"
+              name  = var.analytics_service_name
               image = local.analytics_image
               ports = [
                 {
-                  containerPort = 8005
+                  containerPort = var.analytics_service_port
                 }
               ]
               envFrom = [
@@ -83,7 +96,10 @@ resource "kubernetes_manifest" "analytics_deployment" {
     }
   }
 
-  depends_on = [kubernetes_manifest.analytics_secret]
+  depends_on = [
+    kubernetes_secret_v1.analytics_secret,
+    kubernetes_secret_v1.aws_credentials
+  ]
 }
 
 resource "kubernetes_manifest" "analytics_service" {
@@ -91,18 +107,18 @@ resource "kubernetes_manifest" "analytics_service" {
     apiVersion = "v1"
     kind       = "Service"
     metadata = {
-      name      = "analytics-service"
+      name      = var.analytics_service_name
       namespace = var.namespace
     }
     spec = {
       type = "ClusterIP"
       selector = {
-        app = "analytics-service"
+        app = var.analytics_service_name
       }
       ports = [
         {
-          port       = 8005
-          targetPort = 8005
+          port       = var.analytics_service_port
+          targetPort = var.analytics_service_port
         }
       ]
     }
@@ -123,7 +139,7 @@ resource "kubernetes_manifest" "analytics_hpa" {
       scaleTargetRef = {
         apiVersion = "apps/v1"
         kind       = "Deployment"
-        name       = "analytics-service"
+        name       = var.analytics_service_name
       }
       minReplicas = 1
       maxReplicas = 5
@@ -145,20 +161,18 @@ resource "kubernetes_manifest" "analytics_hpa" {
   depends_on = [kubernetes_manifest.analytics_deployment]
 }
 
-resource "kubernetes_manifest" "auth_secret" {
-  manifest = {
-    apiVersion = "v1"
-    kind       = "Secret"
-    metadata = {
-      name      = "auth-secret"
-      namespace = var.namespace
-    }
-    type = "Opaque"
-    stringData = {
-      DATABASE_URL = var.auth_database_url
-      MASTER_KEY   = var.auth_master_key
-      PORT         = "8001"
-    }
+resource "kubernetes_secret_v1" "auth_secret" {
+  metadata {
+    name      = "auth-secret"
+    namespace = var.namespace
+  }
+
+  type = "Opaque"
+
+  data = {
+    DATABASE_URL = var.auth_database_url
+    MASTER_KEY   = var.auth_master_key
+    PORT         = tostring(var.auth_service_port)
   }
 }
 
@@ -167,30 +181,30 @@ resource "kubernetes_manifest" "auth_deployment" {
     apiVersion = "apps/v1"
     kind       = "Deployment"
     metadata = {
-      name      = "auth-service"
+      name      = var.auth_service_name
       namespace = var.namespace
     }
     spec = {
       replicas = 1
       selector = {
         matchLabels = {
-          app = "auth-service"
+          app = var.auth_service_name
         }
       }
       template = {
         metadata = {
           labels = {
-            app = "auth-service"
+            app = var.auth_service_name
           }
         }
         spec = {
           containers = [
             {
-              name  = "auth-service"
+              name  = var.auth_service_name
               image = local.auth_image
               ports = [
                 {
-                  containerPort = 8001
+                  containerPort = var.auth_service_port
                 }
               ]
               envFrom = [
@@ -207,7 +221,7 @@ resource "kubernetes_manifest" "auth_deployment" {
     }
   }
 
-  depends_on = [kubernetes_manifest.auth_secret]
+  depends_on = [kubernetes_secret_v1.auth_secret]
 }
 
 resource "kubernetes_manifest" "auth_service" {
@@ -215,18 +229,18 @@ resource "kubernetes_manifest" "auth_service" {
     apiVersion = "v1"
     kind       = "Service"
     metadata = {
-      name      = "auth-service"
+      name      = var.auth_service_name
       namespace = var.namespace
     }
     spec = {
       type = "ClusterIP"
       selector = {
-        app = "auth-service"
+        app = var.auth_service_name
       }
       ports = [
         {
-          port       = 8001
-          targetPort = 8001
+          port       = var.auth_service_port
+          targetPort = var.auth_service_port
         }
       ]
     }
@@ -235,20 +249,18 @@ resource "kubernetes_manifest" "auth_service" {
   depends_on = [kubernetes_manifest.auth_deployment]
 }
 
-resource "kubernetes_manifest" "flag_secret" {
-  manifest = {
-    apiVersion = "v1"
-    kind       = "Secret"
-    metadata = {
-      name      = "flag-secret"
-      namespace = var.namespace
-    }
-    type = "Opaque"
-    stringData = {
-      DATABASE_URL     = var.flag_database_url
-      PORT             = "8002"
-      AUTH_SERVICE_URL = "http://auth-service:8001"
-    }
+resource "kubernetes_secret_v1" "flag_secret" {
+  metadata {
+    name      = "flag-secret"
+    namespace = var.namespace
+  }
+
+  type = "Opaque"
+
+  data = {
+    DATABASE_URL     = var.flag_database_url
+    PORT             = tostring(var.flag_service_port)
+    AUTH_SERVICE_URL = "http://${var.auth_service_name}:${var.auth_service_port}"
   }
 }
 
@@ -257,30 +269,30 @@ resource "kubernetes_manifest" "flag_deployment" {
     apiVersion = "apps/v1"
     kind       = "Deployment"
     metadata = {
-      name      = "flag-service"
+      name      = var.flag_service_name
       namespace = var.namespace
     }
     spec = {
       replicas = 1
       selector = {
         matchLabels = {
-          app = "flag-service"
+          app = var.flag_service_name
         }
       }
       template = {
         metadata = {
           labels = {
-            app = "flag-service"
+            app = var.flag_service_name
           }
         }
         spec = {
           containers = [
             {
-              name  = "flag-service"
+              name  = var.flag_service_name
               image = local.flag_image
               ports = [
                 {
-                  containerPort = 8002
+                  containerPort = var.flag_service_port
                 }
               ]
               envFrom = [
@@ -297,7 +309,10 @@ resource "kubernetes_manifest" "flag_deployment" {
     }
   }
 
-  depends_on = [kubernetes_manifest.flag_secret]
+  depends_on = [
+    kubernetes_secret_v1.flag_secret,
+    kubernetes_manifest.auth_service
+  ]
 }
 
 resource "kubernetes_manifest" "flag_service" {
@@ -305,18 +320,18 @@ resource "kubernetes_manifest" "flag_service" {
     apiVersion = "v1"
     kind       = "Service"
     metadata = {
-      name      = "flag-service"
+      name      = var.flag_service_name
       namespace = var.namespace
     }
     spec = {
       type = "ClusterIP"
       selector = {
-        app = "flag-service"
+        app = var.flag_service_name
       }
       ports = [
         {
-          port       = 8002
-          targetPort = 8002
+          port       = var.flag_service_port
+          targetPort = var.flag_service_port
         }
       ]
     }
@@ -325,20 +340,18 @@ resource "kubernetes_manifest" "flag_service" {
   depends_on = [kubernetes_manifest.flag_deployment]
 }
 
-resource "kubernetes_manifest" "targeting_secret" {
-  manifest = {
-    apiVersion = "v1"
-    kind       = "Secret"
-    metadata = {
-      name      = "targeting-secret"
-      namespace = var.namespace
-    }
-    type = "Opaque"
-    stringData = {
-      DATABASE_URL     = var.targeting_database_url
-      AUTH_SERVICE_URL = "http://auth-service:8001"
-      PORT             = "8003"
-    }
+resource "kubernetes_secret_v1" "targeting_secret" {
+  metadata {
+    name      = "targeting-secret"
+    namespace = var.namespace
+  }
+
+  type = "Opaque"
+
+  data = {
+    DATABASE_URL     = var.targeting_database_url
+    AUTH_SERVICE_URL = "http://${var.auth_service_name}:${var.auth_service_port}"
+    PORT             = tostring(var.targeting_service_port)
   }
 }
 
@@ -347,30 +360,30 @@ resource "kubernetes_manifest" "targeting_deployment" {
     apiVersion = "apps/v1"
     kind       = "Deployment"
     metadata = {
-      name      = "targeting-service"
+      name      = var.targeting_service_name
       namespace = var.namespace
     }
     spec = {
       replicas = 1
       selector = {
         matchLabels = {
-          app = "targeting-service"
+          app = var.targeting_service_name
         }
       }
       template = {
         metadata = {
           labels = {
-            app = "targeting-service"
+            app = var.targeting_service_name
           }
         }
         spec = {
           containers = [
             {
-              name  = "targeting-service"
+              name  = var.targeting_service_name
               image = local.targeting_image
               ports = [
                 {
-                  containerPort = 8003
+                  containerPort = var.targeting_service_port
                 }
               ]
               envFrom = [
@@ -387,7 +400,10 @@ resource "kubernetes_manifest" "targeting_deployment" {
     }
   }
 
-  depends_on = [kubernetes_manifest.targeting_secret]
+  depends_on = [
+    kubernetes_secret_v1.targeting_secret,
+    kubernetes_manifest.auth_service
+  ]
 }
 
 resource "kubernetes_manifest" "targeting_service" {
@@ -395,18 +411,18 @@ resource "kubernetes_manifest" "targeting_service" {
     apiVersion = "v1"
     kind       = "Service"
     metadata = {
-      name      = "targeting-service"
+      name      = var.targeting_service_name
       namespace = var.namespace
     }
     spec = {
       type = "ClusterIP"
       selector = {
-        app = "targeting-service"
+        app = var.targeting_service_name
       }
       ports = [
         {
-          port       = 8003
-          targetPort = 8003
+          port       = var.targeting_service_port
+          targetPort = var.targeting_service_port
         }
       ]
     }
@@ -443,7 +459,7 @@ resource "kubernetes_manifest" "redis_deployment" {
               image = local.redis_image
               ports = [
                 {
-                  containerPort = 6379
+                  containerPort = var.redis_port
                 }
               ]
               command = [
@@ -454,7 +470,7 @@ resource "kubernetes_manifest" "redis_deployment" {
               env = [
                 {
                   name  = "REDIS_PORT"
-                  value = "6379"
+                  value = tostring(var.redis_port)
                 }
               ]
             }
@@ -471,7 +487,7 @@ resource "kubernetes_manifest" "redis_service" {
     apiVersion = "v1"
     kind       = "Service"
     metadata = {
-      name      = "redis-service"
+      name      = var.redis_service_name
       namespace = var.namespace
     }
     spec = {
@@ -481,8 +497,8 @@ resource "kubernetes_manifest" "redis_service" {
       ports = [
         {
           protocol   = "TCP"
-          port       = 6379
-          targetPort = 6379
+          port       = var.redis_service_port
+          targetPort = var.redis_port
         }
       ]
       type = "ClusterIP"
@@ -492,24 +508,22 @@ resource "kubernetes_manifest" "redis_service" {
   depends_on = [kubernetes_manifest.redis_deployment]
 }
 
-resource "kubernetes_manifest" "evaluation_secret" {
-  manifest = {
-    apiVersion = "v1"
-    kind       = "Secret"
-    metadata = {
-      name      = "evaluation-secret"
-      namespace = var.namespace
-    }
-    type = "Opaque"
-    stringData = {
-      PORT                  = "8004"
-      REDIS_URL             = "redis://redis-service:6379"
-      FLAG_SERVICE_URL      = "http://flag-service:8002"
-      TARGETING_SERVICE_URL = "http://targeting-service:8003"
-      SERVICE_API_KEY       = var.evaluation_service_api_key
-      AWS_REGION            = var.aws_region
-      AWS_SQS_URL           = var.evaluation_aws_sqs_url
-    }
+resource "kubernetes_secret_v1" "evaluation_secret" {
+  metadata {
+    name      = "evaluation-secret"
+    namespace = var.namespace
+  }
+
+  type = "Opaque"
+
+  data = {
+    PORT                  = tostring(var.evaluation_service_port)
+    REDIS_URL             = "redis://${var.redis_service_name}:${var.redis_service_port}"
+    FLAG_SERVICE_URL      = "http://${var.flag_service_name}:${var.flag_service_port}"
+    TARGETING_SERVICE_URL = "http://${var.targeting_service_name}:${var.targeting_service_port}"
+    SERVICE_API_KEY       = var.evaluation_service_api_key
+    AWS_REGION            = var.aws_region
+    AWS_SQS_URL           = var.sqs_url
   }
 }
 
@@ -518,30 +532,30 @@ resource "kubernetes_manifest" "evaluation_deployment" {
     apiVersion = "apps/v1"
     kind       = "Deployment"
     metadata = {
-      name      = "evaluation-service"
+      name      = var.evaluation_service_name
       namespace = var.namespace
     }
     spec = {
       replicas = 1
       selector = {
         matchLabels = {
-          app = "evaluation-service"
+          app = var.evaluation_service_name
         }
       }
       template = {
         metadata = {
           labels = {
-            app = "evaluation-service"
+            app = var.evaluation_service_name
           }
         }
         spec = {
           containers = [
             {
-              name  = "evaluation-service"
+              name  = var.evaluation_service_name
               image = local.evaluation_image
               ports = [
                 {
-                  containerPort = 8004
+                  containerPort = var.evaluation_service_port
                 }
               ]
               envFrom = [
@@ -572,7 +586,8 @@ resource "kubernetes_manifest" "evaluation_deployment" {
   }
 
   depends_on = [
-    kubernetes_manifest.evaluation_secret,
+    kubernetes_secret_v1.evaluation_secret,
+    kubernetes_secret_v1.aws_credentials,
     kubernetes_manifest.redis_service,
     kubernetes_manifest.flag_service,
     kubernetes_manifest.targeting_service
@@ -584,18 +599,18 @@ resource "kubernetes_manifest" "evaluation_service" {
     apiVersion = "v1"
     kind       = "Service"
     metadata = {
-      name      = "evaluation-service"
+      name      = var.evaluation_service_name
       namespace = var.namespace
     }
     spec = {
       type = "ClusterIP"
       selector = {
-        app = "evaluation-service"
+        app = var.evaluation_service_name
       }
       ports = [
         {
-          port       = 8004
-          targetPort = 8004
+          port       = var.evaluation_service_port
+          targetPort = var.evaluation_service_port
         }
       ]
     }
@@ -616,7 +631,7 @@ resource "kubernetes_manifest" "evaluation_hpa" {
       scaleTargetRef = {
         apiVersion = "apps/v1"
         kind       = "Deployment"
-        name       = "evaluation-service"
+        name       = var.evaluation_service_name
       }
       minReplicas = 1
       maxReplicas = 5

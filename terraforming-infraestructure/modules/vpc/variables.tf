@@ -27,3 +27,8 @@ variable "tags" {
   description = "Tags para os recursos"
   type        = map(string)
 }
+
+variable "database_subnets" {
+  description = "CIDR blocks for database subnets, one per AZ"
+  type        = list(string)
+}

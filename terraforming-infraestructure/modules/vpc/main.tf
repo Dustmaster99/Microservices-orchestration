@@ -245,3 +245,57 @@ resource "aws_route_table_association" "private" {
 
   route_table_id = aws_route_table.private[count.index].id
 }
+
+
+# ==========================================================
+# criação da subnete para os databases
+# ==========================================================
+# cria recursos de rede para conectar a base de dados.
+
+resource "aws_subnet" "database" {
+  count = length(var.database_subnets)
+
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.database_subnets[count.index]
+  availability_zone       = var.availability_zones[count.index]
+  map_public_ip_on_launch = false
+
+  tags = merge(
+    {
+      Name = "${var.project_name}-database-${count.index + 1}"
+      Tier = "database"
+    },
+    var.tags
+  )
+}
+
+
+# ==========================================================
+# Route Tables database
+# ==========================================================
+# Cada subnet database é associada a uma tabela de rotas
+
+resource "aws_route_table" "database" {
+  vpc_id = aws_vpc.main.id
+
+  tags = merge(
+    {
+      Name = "${var.project_name}-database-rt"
+    },
+    var.tags
+  )
+}
+
+
+# ==========================================================
+# Associação das Route Tables database
+# ==========================================================
+# Conecta cada subnet database à sua route table correspondente.
+
+resource "aws_route_table_association" "database" {
+  count = length(var.database_subnets)
+
+  subnet_id      = aws_subnet.database[count.index].id
+  route_table_id = aws_route_table.database.id
+}
+
