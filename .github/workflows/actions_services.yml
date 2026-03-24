@@ -285,6 +285,10 @@ jobs:
             path: targeting-service
             language: python
             ecr_repository: fiap-microservices/targeting-service
+          - name: redis
+            path: redis-service
+            language: docker
+            ecr_repository: fiap-microservices/redis
 
     steps:
       - name: Checkout repository with submodules
