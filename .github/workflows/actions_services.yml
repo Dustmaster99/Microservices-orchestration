@@ -234,7 +234,7 @@ jobs:
           "$(go env GOPATH)/bin/gosec" ./...
 
       - name: Run Trivy FS (SCA) - fail on CRITICAL
-        uses: aquasecurity/trivy-action@57a97c7
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
           scan-type: fs
           scan-ref: ${{ matrix.service.path }}
@@ -299,7 +299,7 @@ jobs:
             ${{ matrix.service.path }}
 
       - name: Scan Docker image with Trivy - fail on CRITICAL
-        uses: aquasecurity/trivy-action@57a97c7
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
           image-ref: ${{ matrix.service.ecr_repository }}:${{ env.IMAGE_TAG }}
           severity: CRITICAL
