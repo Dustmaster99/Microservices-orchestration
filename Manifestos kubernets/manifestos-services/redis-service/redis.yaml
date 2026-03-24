@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  namespace: fiap-microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-server
+  template:
+    metadata:
+      labels:
+        app: redis-server
+    spec:
+      containers:
+        - name: redis-server
+          image: 760729969288.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/redis:latest
+          ports:
+            - containerPort: 6379
+          command: ["redis-server", "--bind", "0.0.0.0"]
+          env:
+            - name: REDIS_PORT
+              value: "6379"
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: fiap-microservices
+spec:
+  selector:
+    app: redis-server
+  ports:
+    - protocol: TCP
+      port: 6379        # porta que outros pods usarão
+      targetPort: 6379  # porta do container
+  type: ClusterIP       # acessível apenas dentro do cluster
+#kubectl apply -f redis.yaml

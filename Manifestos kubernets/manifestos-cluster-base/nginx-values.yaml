@@ -1,0 +1,5 @@
+controller:
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-subnets: "subnet-0d24d1bc557e8e321,subnet-05112c6194d0acf3a"

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flag-service
+  namespace: fiap-microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flag-service
+  template:
+    metadata:
+      labels:
+        app: flag-service
+    spec:
+      containers:
+        - name: flag-service
+          image: 760729969288.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/flag-service:latest
+          ports:
+            - containerPort: 8002
+          envFrom:
+            - secretRef:
+                name: flag-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flag-service
+  namespace: fiap-microservices
+spec:
+  type: ClusterIP
+  selector:
+    app: flag-service
+  ports:
+    - port: 8002
+      targetPort: 8002
+#kubectl apply -f flag-service-deploy.yaml
