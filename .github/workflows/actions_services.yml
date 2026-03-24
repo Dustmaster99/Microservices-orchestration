@@ -168,7 +168,7 @@ jobs:
           working-directory: ${{ matrix.service.path }}
           args: --timeout=5m --disable errcheck --disable staticcheck
 
-    security-scan:
+  security-scan:
     name: Security Scan (SAST & SCA) - ${{ matrix.service.name }}
     runs-on: ubuntu-latest
     strategy:
