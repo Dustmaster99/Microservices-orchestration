@@ -31,7 +31,7 @@ jobs:
             ecr_repository: fiap-microservices/evaluation-service
           - name: flag-service
             path: flag-service
-            language: go
+            language: python
             ecr_repository: fiap-microservices/flag-service
           - name: targeting-service
             path: targeting-service
@@ -68,6 +68,10 @@ jobs:
       - name: Run Python unit tests
         if: matrix.service.language == 'python'
         working-directory: ${{ matrix.service.path }}
+        env:
+          AWS_REGION: us-east-1
+          AWS_SQS_URL: https://example.com/dummy-queue
+          AWS_DYNAMODB_TABLE: dummy-table
         run: |
           if [ -d tests ]; then
             pytest -v
@@ -106,7 +110,7 @@ jobs:
             ecr_repository: fiap-microservices/evaluation-service
           - name: flag-service
             path: flag-service
-            language: go
+            language: python
             ecr_repository: fiap-microservices/flag-service
           - name: targeting-service
             path: targeting-service
@@ -178,7 +182,7 @@ jobs:
             ecr_repository: fiap-microservices/evaluation-service
           - name: flag-service
             path: flag-service
-            language: go
+            language: python
             ecr_repository: fiap-microservices/flag-service
           - name: targeting-service
             path: targeting-service
@@ -253,7 +257,7 @@ jobs:
             ecr_repository: fiap-microservices/evaluation-service
           - name: flag-service
             path: flag-service
-            language: go
+            language: python
             ecr_repository: fiap-microservices/flag-service
           - name: targeting-service
             path: targeting-service
