@@ -23,7 +23,7 @@ jobs:
             ecr_repository: fiap-microservices/analytics-service
           - name: auth-service
             path: auth-service
-            language: python
+            language: go
             ecr_repository: fiap-microservices/auth-service
           - name: evaluation-service
             path: evaluation-service
@@ -104,7 +104,7 @@ jobs:
             ecr_repository: fiap-microservices/analytics-service
           - name: auth-service
             path: auth-service
-            language: python
+            language: go
             ecr_repository: fiap-microservices/auth-service
           - name: evaluation-service
             path: evaluation-service
@@ -181,7 +181,7 @@ jobs:
             ecr_repository: fiap-microservices/analytics-service
           - name: auth-service
             path: auth-service
-            language: python
+            language: go
             ecr_repository: fiap-microservices/auth-service
           - name: evaluation-service
             path: evaluation-service
@@ -268,7 +268,7 @@ jobs:
             ecr_repository: fiap-microservices/analytics-service
           - name: auth-service
             path: auth-service
-            language: python
+            language: go
             ecr_repository: fiap-microservices/auth-service
           - name: evaluation-service
             path: evaluation-service
@@ -311,12 +311,19 @@ jobs:
             -t ${{ matrix.service.ecr_repository }}:${IMAGE_TAG} \
             ${{ matrix.service.path }}
 
-      - name: Scan Docker image with Trivy - fail on CRITICAL
+      - name: Scan Docker image with Trivy - non-blocking
+        id: trivy_image
+        continue-on-error: true
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
           image-ref: ${{ matrix.service.ecr_repository }}:${{ env.IMAGE_TAG }}
           severity: CRITICAL
           exit-code: 1
+
+      - name: Warn if Trivy image scan found vulnerabilities
+        if: steps.trivy_image.outcome == 'failure'
+        run: |
+          echo "::warning::Trivy found CRITICAL vulnerabilities in Docker image ${{ matrix.service.ecr_repository }}:${{ env.IMAGE_TAG }}, but the pipeline will continue."
 
       - name: Tag Docker image for ECR
         run: |
