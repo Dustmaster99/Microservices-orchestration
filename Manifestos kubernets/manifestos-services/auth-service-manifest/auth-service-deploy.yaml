@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: 760729969288.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:latest
+          image: 654654184825.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:latest
           ports:
             - containerPort: 8001
           envFrom:
