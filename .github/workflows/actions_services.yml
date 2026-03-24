@@ -20,23 +20,23 @@ jobs:
           - name: analytics-service
             path: analytics-service
             language: python
-            ecr_repository: analytics-service
+            ecr_repository: fiap-microservices/analytics-service
           - name: auth-service
             path: auth-service
             language: python
-            ecr_repository: auth-service
+            ecr_repository: fiap-microservices/auth-service
           - name: evaluation-service
             path: evaluation-service
             language: go
-            ecr_repository: evaluation-service
+            ecr_repository: fiap-microservices/evaluation-service
           - name: flag-service
             path: flag-service
             language: go
-            ecr_repository: flag-service
+            ecr_repository: fiap-microservices/flag-service
           - name: targeting-service
             path: targeting-service
             language: python
-            ecr_repository: targeting-service
+            ecr_repository: fiap-microservices/targeting-service
 
     steps:
       - name: Checkout repository with submodules
@@ -95,23 +95,23 @@ jobs:
           - name: analytics-service
             path: analytics-service
             language: python
-            ecr_repository: analytics-service
+            ecr_repository: fiap-microservices/analytics-service
           - name: auth-service
             path: auth-service
             language: python
-            ecr_repository: auth-service
+            ecr_repository: fiap-microservices/auth-service
           - name: evaluation-service
             path: evaluation-service
             language: go
-            ecr_repository: evaluation-service
+            ecr_repository: fiap-microservices/evaluation-service
           - name: flag-service
             path: flag-service
             language: go
-            ecr_repository: flag-service
+            ecr_repository: fiap-microservices/flag-service
           - name: targeting-service
             path: targeting-service
             language: python
-            ecr_repository: targeting-service
+            ecr_repository: fiap-microservices/targeting-service
 
     steps:
       - name: Checkout repository with submodules
@@ -167,23 +167,23 @@ jobs:
           - name: analytics-service
             path: analytics-service
             language: python
-            ecr_repository: analytics-service
+            ecr_repository: fiap-microservices/analytics-service
           - name: auth-service
             path: auth-service
             language: python
-            ecr_repository: auth-service
+            ecr_repository: fiap-microservices/auth-service
           - name: evaluation-service
             path: evaluation-service
             language: go
-            ecr_repository: evaluation-service
+            ecr_repository: fiap-microservices/evaluation-service
           - name: flag-service
             path: flag-service
             language: go
-            ecr_repository: flag-service
+            ecr_repository: fiap-microservices/flag-service
           - name: targeting-service
             path: targeting-service
             language: python
-            ecr_repository: targeting-service
+            ecr_repository: fiap-microservices/targeting-service
 
     steps:
       - name: Checkout repository with submodules
@@ -242,23 +242,23 @@ jobs:
           - name: analytics-service
             path: analytics-service
             language: python
-            ecr_repository: analytics-service
+            ecr_repository: fiap-microservices/analytics-service
           - name: auth-service
             path: auth-service
             language: python
-            ecr_repository: auth-service
+            ecr_repository: fiap-microservices/auth-service
           - name: evaluation-service
             path: evaluation-service
             language: go
-            ecr_repository: evaluation-service
+            ecr_repository: fiap-microservices/evaluation-service
           - name: flag-service
             path: flag-service
             language: go
-            ecr_repository: flag-service
+            ecr_repository: fiap-microservices/flag-service
           - name: targeting-service
             path: targeting-service
             language: python
-            ecr_repository: targeting-service
+            ecr_repository: fiap-microservices/targeting-service
 
     steps:
       - name: Checkout repository with submodules
