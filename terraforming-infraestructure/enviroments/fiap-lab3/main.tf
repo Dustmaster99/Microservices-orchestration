@@ -111,7 +111,6 @@ module "eks" {
   node_role_arn    = "arn:aws:iam::654654184825:role/c204094a5205123l14214074t1w654654184-LabEksNodeRole-jxhHxtfdhs4k"
 
   
-
   node_group_name    = "microservices-eks-nodes"
   private_subnet_ids = module.vpc.private_subnets
 
@@ -144,42 +143,26 @@ module "cluster_manifests" {
   depends_on = [module.eks]
 }
 
-module "microservices_manifests" {
-  source = "../../modules/microservices-manifests"
+module "argocd" {
+  source = "../../modules/argocd"
 
-  namespace    = "fiap-microservices"
-  aws_region   = var.aws_region
-  ecr_registry = module.ecr.repository_prefix
-  image_tag    = var.image_tag
-  image_tag_redis = var.image_tag_redis
+  namespace           = module.cluster_manifests.argocd_namespace
+  chart_version       = "7.8.2"
+  server_service_type = "LoadBalancer"
 
-  analytics_dynamodb_table = module.analytics_dynamodb.table_name
-  auth_database_url      = module.rds.auth_database_url
-  auth_master_key        = var.auth_master_key
-  flag_database_url      = module.rds.flag_database_url
-  targeting_database_url = module.rds.targeting_database_url
-
-  evaluation_service_api_key = var.evaluation_service_api_key
-  aws_access_key_id     = var.aws_access_key_id_secret
-  aws_secret_access_key = var.aws_secret_access_key_secret
-  aws_session_token     = var.aws_session_token_secret
-
-  analytics_service_name = var.analytics_service_name
-  analytics_service_port = var.analytics_service_port
-
-  auth_service_name = var.auth_service_name
-  auth_service_port = var.auth_service_port
-
-  flag_service_name = var.flag_service_name
-  flag_service_port = var.flag_service_port
-
-  targeting_service_name = var.targeting_service_name
-  targeting_service_port = var.targeting_service_port
-
-  evaluation_service_name = var.evaluation_service_name
-  evaluation_service_port = var.evaluation_service_port
-  redis_service_port    = 6379
-  sqs_url = module.evaluation_response_sqs.queue_url
   depends_on = [module.cluster_manifests]
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 

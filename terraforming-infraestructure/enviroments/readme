@@ -2,8 +2,6 @@ terraform init
 terraform validate  
 terraform plan -target="module.ecr"
 terraform apply -target="module.ecr"
-Set-ExecutionPolicy -Scope Process Bypass
-.\push-to-registry.ps1
 # lembrar de mudar o valor de  cluster_role_arn e node_role_arn, alem das credenciais AWS_ACCESS_KEY_ID e AWS_SECRET_ACCESS_KEY e AWS_SESSION_TOKEN
 terraform plan -target="module.vpc" -target="module.eks"
 terraform apply -target="module.vpc" -target="module.eks" 

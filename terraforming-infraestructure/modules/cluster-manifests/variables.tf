@@ -20,3 +20,21 @@ variable "aws_session_token_secret" {
   type        = string
   sensitive   = true
 }
+
+variable "fiap_microservices_namespace" {
+  description = "Namespace dos microserviços"
+  type        = string
+  default     = "fiap-microservices"
+}
+
+variable "ingress_nginx_namespace" {
+  description = "Namespace do ingress-nginx"
+  type        = string
+  default     = "ingress-nginx"
+}
+
+variable "argocd_namespace" {
+  description = "Namespace do ArgoCD"
+  type        = string
+  default     = "argocd"
+}

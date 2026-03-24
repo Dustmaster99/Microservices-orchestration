@@ -17,3 +17,13 @@ resource "kubernetes_manifest" "ingress_nginx_namespace" {
     }
   }
 }
+
+resource "kubernetes_manifest" "argocd_namespace" {
+  manifest = {
+    apiVersion = "v1"
+    kind       = "Namespace"
+    metadata = {
+      name = "argocd"
+    }
+  }
+}
