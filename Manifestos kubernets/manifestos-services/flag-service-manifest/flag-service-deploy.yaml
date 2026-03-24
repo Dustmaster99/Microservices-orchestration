@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: flag-service
-          image: 654654184825.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/flag-service:latest
+          image: 654654184825.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/flag-service:9e50c36
           ports:
             - containerPort: 8002
           envFrom:
