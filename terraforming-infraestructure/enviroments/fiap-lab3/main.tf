@@ -143,6 +143,39 @@ module "cluster_manifests" {
   depends_on = [module.eks]
 }
 
+module "microservices_secrets" {
+  source = "../../modules/microservices-secrets"
+
+  namespace = "fiap-microservices"
+  aws_region = var.aws_region
+
+  aws_access_key_id     = var.aws_access_key_id_secret
+  aws_secret_access_key = var.aws_secret_access_key_secret
+  aws_session_token     = var.aws_session_token_secret
+
+  sqs_url                  = module.evaluation_response_sqs.queue_url
+  analytics_dynamodb_table = module.analytics_dynamodb.table_name
+
+  evaluation_service_api_key = var.evaluation_service_api_key
+
+  auth_database_url      = module.rds.auth_database_url
+  auth_master_key        = var.auth_master_key
+  flag_database_url      = module.rds.flag_database_url
+  targeting_database_url = module.rds.targeting_database_url
+
+  analytics_service_port  = var.analytics_service_port
+  evaluation_service_port = var.evaluation_service_port
+  auth_service_port       = var.auth_service_port
+  flag_service_port       = var.flag_service_port
+  targeting_service_port  = var.targeting_service_port
+  redis_service_port      = 6379
+
+  redis_service_name     = "redis-service"
+  auth_service_name      = var.auth_service_name
+  flag_service_name      = var.flag_service_name
+  targeting_service_name = var.targeting_service_name
+}
+
 module "argocd" {
   source = "../../modules/argocd"
 
