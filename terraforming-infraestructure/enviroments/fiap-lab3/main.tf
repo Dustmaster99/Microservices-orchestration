@@ -107,8 +107,8 @@ module "eks" {
   cluster_name    = "microservices-eks-cluster"
   cluster_version = "1.30"
 
-  cluster_role_arn = "arn:aws:iam::654654184825:role/c204094a5205123l14214074t1w654654-LabEksClusterRole-v8for52ETr2e"
-  node_role_arn    = "arn:aws:iam::654654184825:role/c204094a5205123l14214074t1w654654184-LabEksNodeRole-jxhHxtfdhs4k"
+  cluster_role_arn = "arn:aws:iam::654654184825:role/c204094a5205123l14214074t1w654654-LabEksClusterRole-jRIFecynJN14"
+  node_role_arn    = "arn:aws:iam::654654184825:role/c204094a5205123l14214074t1w654654184-LabEksNodeRole-DC9hnJIb92oB"
 
   
   node_group_name    = "microservices-eks-nodes"
