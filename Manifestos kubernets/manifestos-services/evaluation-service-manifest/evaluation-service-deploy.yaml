@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: evaluation-service
-          image: 654654184825.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/evaluation-service:e6162c3
+          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/evaluation-service:d32e518
           ports:
             - containerPort: 8004
           envFrom:
