@@ -1,9 +1,27 @@
+# =========================
+# Inicialização do Terraform
+# =========================
+
 terraform init
+
+# =========================
+# Validação da configuração
+# =========================
 
 terraform validate
 
+# =========================
+# ECR
+# Repositórios Docker
+# =========================
+
 terraform plan -target="module.ecr"
 terraform apply -target="module.ecr"
+
+# =========================
+# Credenciais AWS
+# Verificar antes do EKS
+# =========================
 
 # lembrar de configurar:
 # - cluster_role_arn
@@ -12,37 +30,83 @@ terraform apply -target="module.ecr"
 # - AWS_SECRET_ACCESS_KEY
 # - AWS_SESSION_TOKEN
 
-terraform plan \
-  -target="module.vpc" \
-  -target="module.eks"
+# =========================
+# VPC
+# Infraestrutura de rede
+# =========================
 
-terraform apply \
-  -target="module.vpc" \
-  -target="module.eks"
+terraform plan -target="module.vpc"
+terraform apply -target="module.vpc"
 
-terraform plan \
-  -target="module.analytics_dynamodb" \
-  -target="module.rds" \
-  -target="module.evaluation_response_sqs"
+# =========================
+# EKS
+# Cluster Kubernetes
+# =========================
 
-terraform apply \
-  -target="module.analytics_dynamodb" \
-  -target="module.rds" \
-  -target="module.evaluation_response_sqs"
+terraform plan -target="module.eks"
+terraform apply -target="module.eks"
+
+# =========================
+# DynamoDB
+# Banco NoSQL
+# =========================
+
+terraform plan -target="module.analytics_dynamodb"
+terraform apply -target="module.analytics_dynamodb"
+
+# =========================
+# RDS
+# Banco relacional
+# =========================
+
+terraform plan -target="module.rds"
+terraform apply -target="module.rds"
+
+# =========================
+# SQS
+# Filas de mensageria
+# =========================
+
+terraform plan -target="module.evaluation_response_sqs"
+terraform apply -target="module.evaluation_response_sqs"
+
+# =========================
+# Cluster Manifests
+# Recursos Kubernetes base
+# =========================
 
 terraform plan -target="module.cluster_manifests"
 terraform apply -target="module.cluster_manifests"
 
+# =========================
+# Observability
+# Prometheus, Grafana,
+# Loki, Tempo e métricas
+# =========================
+
+terraform plan -target="module.observability"
+terraform apply -target="module.observability"
+
+# =========================
+# Microservices Secrets
+# Kubernetes Secrets
+# =========================
+
 terraform plan -target="module.microservices_secrets"
 terraform apply -target="module.microservices_secrets"
+
+# =========================
+# ArgoCD
+# GitOps e Deploy contínuo
+# =========================
 
 terraform plan -target="module.argocd"
 terraform apply -target="module.argocd"
 
-# caso exista módulo separado para aplicações ArgoCD
-terraform plan -target="module.argocd_apps"
-terraform apply -target="module.argocd_apps"
+# =========================
+# Validação Final
+# Aplicação completa
+# =========================
 
-# validação final
 terraform plan
 terraform apply
