@@ -16,10 +16,10 @@ spec:
       containers:
         - name: auth-service
 <<<<<<< HEAD
-          image: 654654184825.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:e6162c3
+          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:9836061
 
 =======
-          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:d32e518
+          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:9836061
 >>>>>>> cc3c460b21b5201c13f535b4a9191b9eb15bda4e
           ports:
             - containerPort: 8001
