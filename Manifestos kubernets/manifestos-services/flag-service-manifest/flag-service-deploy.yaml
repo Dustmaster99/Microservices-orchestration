@@ -19,13 +19,8 @@ spec:
     spec:
       containers:
         - name: flag-service
-<<<<<<< HEAD
+          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/flag-service:50
 
-          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/flag-service:9836061
-
-=======
-          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/flag-service:9836061
->>>>>>> cc3c460b21b5201c13f535b4a9191b9eb15bda4e
           ports:
             - containerPort: 8002
 
@@ -71,5 +66,3 @@ spec:
   ports:
     - port: 8002
       targetPort: 8002
-
-# kubectl apply -f flag-service-deploy.yaml

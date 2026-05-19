@@ -19,13 +19,8 @@ spec:
     spec:
       containers:
         - name: targeting-service
-<<<<<<< HEAD
+          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/targeting-service:50
 
-          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/targeting-service:9836061
-
-=======
-          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/targeting-service:9836061
->>>>>>> cc3c460b21b5201c13f535b4a9191b9eb15bda4e
           ports:
             - containerPort: 8003
 
@@ -71,5 +66,3 @@ spec:
   ports:
     - port: 8003
       targetPort: 8003
-
-# kubectl apply -f targeting-service-deploy.yaml

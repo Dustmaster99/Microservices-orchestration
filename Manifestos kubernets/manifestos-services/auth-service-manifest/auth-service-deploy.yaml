@@ -3,24 +3,24 @@ kind: Deployment
 metadata:
   name: auth-service
   namespace: fiap-microservices
+
 spec:
   replicas: 1
+
   selector:
     matchLabels:
       app: auth-service
+
   template:
     metadata:
       labels:
         app: auth-service
+
     spec:
       containers:
         - name: auth-service
-<<<<<<< HEAD
-          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:9836061
+          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:50
 
-=======
-          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:9836061
->>>>>>> cc3c460b21b5201c13f535b4a9191b9eb15bda4e
           ports:
             - containerPort: 8001
 
@@ -33,7 +33,7 @@ spec:
               value: "auth-service"
 
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "otel-collector.monitoring.svc.cluster.local:4318"
+              value: "http://otel-collector.monitoring.svc.cluster.local:4318"
 
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: "http/protobuf"
@@ -56,12 +56,13 @@ kind: Service
 metadata:
   name: auth-service
   namespace: fiap-microservices
+
 spec:
   type: ClusterIP
+
   selector:
     app: auth-service
+
   ports:
     - port: 8001
       targetPort: 8001
-
-# kubectl apply -f auth-service-deploy.yaml
