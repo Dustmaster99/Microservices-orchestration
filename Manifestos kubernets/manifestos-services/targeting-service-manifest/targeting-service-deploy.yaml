@@ -19,9 +19,13 @@ spec:
     spec:
       containers:
         - name: targeting-service
+<<<<<<< HEAD
 
           image: 654654184825.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/targeting-service:e6162c3
 
+=======
+          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/targeting-service:d32e518
+>>>>>>> cc3c460b21b5201c13f535b4a9191b9eb15bda4e
           ports:
             - containerPort: 8003
 
