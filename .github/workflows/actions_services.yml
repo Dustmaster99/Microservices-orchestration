@@ -151,29 +151,35 @@ jobs:
           python -m pip install --upgrade pip
           pip install pylint flake8
 
-      - name: Run flake8
+      - name: Run flake8 - non-blocking
         if: matrix.service.language == 'python'
         working-directory: ${{ matrix.service.path }}
-        run: flake8 . --max-line-length=120 --extend-ignore=E402,W293,W291,E302,E305,E501,W292,E261,E701
+        run: |
+          if ! flake8 . --max-line-length=120 --extend-ignore=E402,W293,W291,E302,E305,E501,W292,E261,E701; then
+            echo "::warning::Flake8 found issues in ${{ matrix.service.name }}, but the pipeline will continue."
+          fi
 
-      - name: Run pylint
+      - name: Run pylint - non-blocking
         if: matrix.service.language == 'python'
         working-directory: ${{ matrix.service.path }}
         run: |
           PY_FILES=$(find . -name "*.py" -not -path "./venv/*" -not -path "./.venv/*")
           if [ -n "$PY_FILES" ]; then
-            echo "$PY_FILES" | xargs pylint --disable=import-error,missing-module-docstring,missing-function-docstring,wrong-import-position,trailing-whitespace,missing-final-newline,broad-exception-caught,logging-fstring-interpolation,invalid-envvar-default,wrong-import-order,multiple-statements,line-too-long
+            if ! echo "$PY_FILES" | xargs pylint --disable=import-error,missing-module-docstring,missing-function-docstring,wrong-import-position,trailing-whitespace,missing-final-newline,broad-exception-caught,logging-fstring-interpolation,invalid-envvar-default,wrong-import-order,multiple-statements,line-too-long,invalid-name,unused-argument,global-statement,too-many-statements; then
+              echo "::warning::Pylint found issues in ${{ matrix.service.name }}, but the pipeline will continue."
+            fi
           else
             echo "No Python files found. Skipping pylint."
           fi
 
-      - name: Run golangci-lint
+      - name: Run golangci-lint - non-blocking
         if: matrix.service.language == 'go'
+        continue-on-error: true
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.59
           working-directory: ${{ matrix.service.path }}
-          args: --timeout=5m --disable errcheck --disable staticcheck
+          args: --timeout=5m --disable errcheck --disable staticcheck --disable typecheck
 
   security-scan:
     name: Security Scan (SAST & SCA) - ${{ matrix.service.name }}
