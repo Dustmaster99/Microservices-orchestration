@@ -20,7 +20,7 @@ spec:
       containers:
         - name: targeting-service
         
-          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/targeting-service:2cf0d13
+          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/targeting-service:cebf566
 
 
           ports:
