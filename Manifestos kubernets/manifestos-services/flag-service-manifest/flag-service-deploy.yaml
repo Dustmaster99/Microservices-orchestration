@@ -3,35 +3,69 @@ kind: Deployment
 metadata:
   name: flag-service
   namespace: fiap-microservices
+
 spec:
   replicas: 1
+
   selector:
     matchLabels:
       app: flag-service
+
   template:
     metadata:
       labels:
         app: flag-service
+
     spec:
       containers:
         - name: flag-service
+
           image: 654654184825.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/flag-service:e6162c3
+
           ports:
             - containerPort: 8002
+
           envFrom:
             - secretRef:
                 name: flag-secret
+
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "flag-service"
+
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.monitoring.svc.cluster.local:4318"
+
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+
+            - name: OTEL_METRICS_EXPORTER
+              value: "otlp"
+
+            - name: SERVICE_VERSION
+              value: "1.0.0"
+
+            - name: ENVIRONMENT
+              value: "fiap-lab3"
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: flag-service
   namespace: fiap-microservices
+
 spec:
   type: ClusterIP
+
   selector:
     app: flag-service
+
   ports:
     - port: 8002
       targetPort: 8002
-#kubectl apply -f flag-service-deploy.yaml
+
+# kubectl apply -f flag-service-deploy.yaml

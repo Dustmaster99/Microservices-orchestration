@@ -145,3 +145,9 @@ variable "image_tag_redis" {
   type        = string
   default     = "7"
 }
+
+variable "argocd_chart_version" {
+  description = "Versão do Helm chart do ArgoCD."
+  type        = string
+  default     = "7.6.12"
+}

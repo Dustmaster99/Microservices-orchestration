@@ -23,11 +23,32 @@ spec:
                 name: analytics-secret
             - secretRef:
                 name: aws-credentials
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "analytics-service"
+
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.monitoring.svc.cluster.local:4318"
+
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+
+            - name: OTEL_METRICS_EXPORTER
+              value: "otlp"
+
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+
+            - name: SERVICE_VERSION
+              value: "1.0.0"
+
+            - name: ENVIRONMENT
+              value: "fiap-lab3"
           resources:
             requests:
-              cpu: "100m"     # CPU mínima garantida para HPA
+              cpu: "100m"
             limits:
-              cpu: "500m"     # Máximo que o pod pode consumir
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
@@ -41,4 +62,3 @@ spec:
   ports:
     - port: 8005
       targetPort: 8005
-#kubectl apply -f analytics-service-deploy.yaml

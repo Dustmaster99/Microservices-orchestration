@@ -8,37 +8,72 @@ spec:
   selector:
     matchLabels:
       app: evaluation-service
+
   template:
     metadata:
       labels:
         app: evaluation-service
+
     spec:
       containers:
         - name: evaluation-service
+
           image: 654654184825.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/evaluation-service:e6162c3
+
           ports:
             - containerPort: 8004
+
           envFrom:
             - secretRef:
                 name: evaluation-secret
+
             - secretRef:
                 name: aws-credentials
+
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "evaluation-service"
+
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "otel-collector.monitoring.svc.cluster.local:4318"
+
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+
+            - name: OTEL_METRICS_EXPORTER
+              value: "otlp"
+
+            - name: SERVICE_VERSION
+              value: "1.0.0"
+
+            - name: ENVIRONMENT
+              value: "fiap-lab3"
+
           resources:
             requests:
-              cpu: "10m"     # CPU mínima garantida para HPA
+              cpu: "10m"
+
             limits:
-              cpu: "100m"     # Máximo que o pod pode consumir
+              cpu: "100m"
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: evaluation-service
   namespace: fiap-microservices
+
 spec:
   type: ClusterIP
+
   selector:
     app: evaluation-service
+
   ports:
     - port: 8004
       targetPort: 8004
-#kubectl apply -f evaluation-service-deploy.yaml
+
+# kubectl apply -f evaluation-service-deploy.yaml

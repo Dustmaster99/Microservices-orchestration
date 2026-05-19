@@ -107,20 +107,20 @@ module "eks" {
   cluster_name    = "microservices-eks-cluster"
   cluster_version = "1.30"
 
-  cluster_role_arn = "arn:aws:iam::657010996850:role/c208550a5300992l15128693t1w657010-LabEksClusterRole-kemEU9S0MoFv"
-  node_role_arn    = "arn:aws:iam::657010996850:role/c208550a5300992l15128693t1w657010996-LabEksNodeRole-C4v3HFY4310Y"
+  cluster_role_arn = "arn:aws:iam::657010996850:role/c208550a5300992l15128693t1w657010-LabEksClusterRole-vNxhHOkZjWFE"
+  node_role_arn    = "arn:aws:iam::657010996850:role/c208550a5300992l15128693t1w657010996-LabEksNodeRole-Ktc703E7WC6B"
 
   
   node_group_name    = "microservices-eks-nodes"
   private_subnet_ids = module.vpc.private_subnets
 
-  instance_types = ["t3.medium"]
+  instance_types = ["t3.large"]
   capacity_type  = "SPOT"
   disk_size      = 20
 
-  desired_size = 3
-  min_size     = 2
-  max_size     = 4
+  desired_size = 1
+  min_size     = 0
+  max_size     = 2
 
   max_unavailable = 1
 
@@ -176,18 +176,114 @@ module "microservices_secrets" {
   targeting_service_name = var.targeting_service_name
 }
 
+module "observability" {
+  source = "../../modules/observability"
+
+  namespace = "monitoring"
+
+  # ==========================================
+  # PROMETHEUS / GRAFANA
+  # ==========================================
+
+  prometheus_release_name             = "monitoring"
+  kube_prometheus_stack_chart_version = "61.3.2"
+
+  grafana_admin_user                  = "admin"
+  grafana_admin_password              = "root1234"
+
+  grafana_service_type                = "LoadBalancer"
+
+  prometheus_retention                = "7d"
+
+  # ==========================================
+  # PERSISTÊNCIA DO GRAFANA
+  # ==========================================
+
+  grafana_persistence_enabled         = true
+
+  # Em EKS normalmente:
+  # gp2 ou gp3
+  grafana_persistence_storage_class_name = "gp2"
+
+  grafana_persistence_size            = "5Gi"
+
+  # ==========================================
+  # LOKI
+  # ==========================================
+
+  loki_release_name                   = "loki"
+  loki_stack_chart_version            = "2.10.2"
+
+  # ==========================================
+  # OTEL
+  # ==========================================
+
+  otel_collector_release_name         = "otel-collector"
+
+  otel_collector_mode                 = "deployment"
+
+  promtail_enabled                    = true
+
+  loki_otlp_endpoint                  = "http://loki.monitoring.svc.cluster.local:3100/otlp"
+}
+
 module "argocd" {
   source = "../../modules/argocd"
 
-  namespace           = module.cluster_manifests.argocd_namespace
-  chart_version       = "7.8.2"
+  namespace           = "argocd"
+  chart_version       = var.argocd_chart_version
   server_service_type = "LoadBalancer"
 
-  depends_on = [module.cluster_manifests]
+  argocd_applications = {
+    auth-service = {
+      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
+      target_revision       = "main"
+      path                  = "Manifestos kubernets/manifestos-services/auth-service"
+      destination_server    = "https://kubernetes.default.svc"
+      destination_namespace = "fiap-microservices"
+    }
+
+    flag-service = {
+      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
+      target_revision       = "main"
+      path                  = "Manifestos kubernets/manifestos-services/flag-service"
+      destination_server    = "https://kubernetes.default.svc"
+      destination_namespace = "fiap-microservices"
+    }
+
+    targeting-service = {
+      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
+      target_revision       = "main"
+      path                  = "Manifestos kubernets/manifestos-services/targeting-service"
+      destination_server    = "https://kubernetes.default.svc"
+      destination_namespace = "fiap-microservices"
+    }
+
+    evaluation-service = {
+      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
+      target_revision       = "main"
+      path                  = "Manifestos kubernets/manifestos-services/evaluation-service"
+      destination_server    = "https://kubernetes.default.svc"
+      destination_namespace = "fiap-microservices"
+    }
+
+    analytics-service = {
+      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
+      target_revision       = "main"
+      path                  = "Manifestos kubernets/manifestos-services/analytics-service"
+      destination_server    = "https://kubernetes.default.svc"
+      destination_namespace = "fiap-microservices"
+    }
+
+    redis = {
+      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
+      target_revision       = "main"
+      path                  = "Manifestos kubernets/manifestos-services/redis"
+      destination_server    = "https://kubernetes.default.svc"
+      destination_namespace = "fiap-microservices"
+    }
+  }
 }
-
-
-
 
 
 

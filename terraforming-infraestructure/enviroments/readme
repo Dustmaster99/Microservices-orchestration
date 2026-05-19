@@ -1,16 +1,48 @@
 terraform init
-terraform validate  
+
+terraform validate
+
 terraform plan -target="module.ecr"
 terraform apply -target="module.ecr"
-# lembrar de mudar o valor de  cluster_role_arn e node_role_arn, alem das credenciais AWS_ACCESS_KEY_ID e AWS_SECRET_ACCESS_KEY e AWS_SESSION_TOKEN
-terraform plan -target="module.vpc" -target="module.eks"
-terraform apply -target="module.vpc" -target="module.eks" 
-terraform plan -target="module.analytics_dynamodb" -target="module.rds"  -target="module.evaluation_response_sqs"
-terraform apply -target="module.analytics_dynamodb" -target="module.rds"  -target="module.evaluation_response_sqs"
+
+# lembrar de configurar:
+# - cluster_role_arn
+# - node_role_arn
+# - AWS_ACCESS_KEY_ID
+# - AWS_SECRET_ACCESS_KEY
+# - AWS_SESSION_TOKEN
+
+terraform plan \
+  -target="module.vpc" \
+  -target="module.eks"
+
+terraform apply \
+  -target="module.vpc" \
+  -target="module.eks"
+
+terraform plan \
+  -target="module.analytics_dynamodb" \
+  -target="module.rds" \
+  -target="module.evaluation_response_sqs"
+
+terraform apply \
+  -target="module.analytics_dynamodb" \
+  -target="module.rds" \
+  -target="module.evaluation_response_sqs"
+
 terraform plan -target="module.cluster_manifests"
-terraform plan -target="module.cluster_manifests"
+terraform apply -target="module.cluster_manifests"
+
+terraform plan -target="module.microservices_secrets"
 terraform apply -target="module.microservices_secrets"
+
 terraform plan -target="module.argocd"
 terraform apply -target="module.argocd"
 
+# caso exista módulo separado para aplicações ArgoCD
+terraform plan -target="module.argocd_apps"
+terraform apply -target="module.argocd_apps"
 
+# validação final
+terraform plan
+terraform apply
