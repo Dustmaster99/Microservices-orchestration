@@ -3,12 +3,7 @@ output "namespace" {
   value       = kubernetes_namespace.argocd.metadata[0].name
 }
 
-output "server_service_type" {
-  description = "Tipo do Service do ArgoCD Server."
-  value       = var.server_service_type
-}
-
-output "applications" {
-  description = "Aplicações criadas automaticamente no ArgoCD."
-  value       = keys(var.argocd_applications)
+output "release_name" {
+  description = "Nome da release Helm do ArgoCD."
+  value       = helm_release.argocd.name
 }

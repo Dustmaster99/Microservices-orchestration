@@ -146,8 +146,43 @@ variable "image_tag_redis" {
   default     = "7"
 }
 
+# =========================
+# ArgoCD
+# =========================
+
+variable "argocd_namespace" {
+  description = "Namespace onde o ArgoCD será instalado."
+  type        = string
+  default     = "argocd"
+}
+
+variable "argocd_release_name" {
+  description = "Nome da release Helm do ArgoCD."
+  type        = string
+  default     = "argocd"
+}
+
 variable "argocd_chart_version" {
-  description = "Versão do Helm chart do ArgoCD."
+  description = "Versão do chart Helm do ArgoCD."
   type        = string
   default     = "7.6.12"
+}
+
+variable "argocd_server_service_type" {
+  description = "Tipo do service do ArgoCD Server."
+  type        = string
+  default     = "LoadBalancer"
+}
+
+
+variable "argocd_applications" {
+  description = "Mapa de aplicações gerenciadas pelo ArgoCD."
+
+  type = map(object({
+    repo_url              = string
+    target_revision       = string
+    path                  = string
+    destination_server    = string
+    destination_namespace = string
+  }))
 }

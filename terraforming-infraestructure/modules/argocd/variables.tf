@@ -4,27 +4,25 @@ variable "namespace" {
   default     = "argocd"
 }
 
-variable "chart_version" {
-  description = "Versão do Helm chart do ArgoCD."
+variable "release_name" {
+  description = "Nome da release Helm do ArgoCD."
   type        = string
-  default     = "7.6.12"
+  default     = "argocd"
+}
+
+variable "chart_version" {
+  description = "Versão do chart Helm do ArgoCD."
+  type        = string
 }
 
 variable "server_service_type" {
-  description = "Tipo do Service do ArgoCD Server."
+  description = "Tipo do service do ArgoCD server."
   type        = string
   default     = "LoadBalancer"
 }
 
-variable "argocd_applications" {
-  description = "Aplicações que serão criadas automaticamente no ArgoCD."
-  type = map(object({
-    repo_url              = string
-    target_revision       = string
-    path                  = string
-    destination_server    = string
-    destination_namespace = string
-  }))
-
-  default = {}
+variable "timeout" {
+  description = "Timeout da instalação Helm em segundos."
+  type        = number
+  default     = 900
 }

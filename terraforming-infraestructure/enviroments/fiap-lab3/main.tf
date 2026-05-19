@@ -199,7 +199,7 @@ module "observability" {
   # PERSISTÊNCIA DO GRAFANA
   # ==========================================
 
-  grafana_persistence_enabled         = true
+  grafana_persistence_enabled         = false
 
   # Em EKS normalmente:
   # gp2 ou gp3
@@ -229,69 +229,19 @@ module "observability" {
 
 module "argocd" {
   source = "../../modules/argocd"
-
-  namespace           = "argocd"
+  namespace           = var.argocd_namespace
+  release_name        = var.argocd_release_name
   chart_version       = var.argocd_chart_version
-  server_service_type = "LoadBalancer"
-
-  argocd_applications = {
-    auth-service = {
-      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
-      target_revision       = "main"
-      path                  = "Manifestos kubernets/manifestos-services/auth-service"
-      destination_server    = "https://kubernetes.default.svc"
-      destination_namespace = "fiap-microservices"
-    }
-
-    flag-service = {
-      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
-      target_revision       = "main"
-      path                  = "Manifestos kubernets/manifestos-services/flag-service"
-      destination_server    = "https://kubernetes.default.svc"
-      destination_namespace = "fiap-microservices"
-    }
-
-    targeting-service = {
-      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
-      target_revision       = "main"
-      path                  = "Manifestos kubernets/manifestos-services/targeting-service"
-      destination_server    = "https://kubernetes.default.svc"
-      destination_namespace = "fiap-microservices"
-    }
-
-    evaluation-service = {
-      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
-      target_revision       = "main"
-      path                  = "Manifestos kubernets/manifestos-services/evaluation-service"
-      destination_server    = "https://kubernetes.default.svc"
-      destination_namespace = "fiap-microservices"
-    }
-
-    analytics-service = {
-      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
-      target_revision       = "main"
-      path                  = "Manifestos kubernets/manifestos-services/analytics-service"
-      destination_server    = "https://kubernetes.default.svc"
-      destination_namespace = "fiap-microservices"
-    }
-
-    redis = {
-      repo_url              = "https://github.com/Dustmaster99/Microservices-orchestration.git"
-      target_revision       = "main"
-      path                  = "Manifestos kubernets/manifestos-services/redis"
-      destination_server    = "https://kubernetes.default.svc"
-      destination_namespace = "fiap-microservices"
-    }
-  }
+  server_service_type = var.argocd_server_service_type
 }
 
+module "argocd_applications" {
+  source = "../../modules/argocd-applications"
 
+  argocd_namespace    = module.argocd.namespace
+  argocd_applications = var.argocd_applications
 
-
-
-
-
-
-
-
-
+  depends_on = [
+    module.argocd
+  ]
+}

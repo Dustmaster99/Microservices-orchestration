@@ -97,11 +97,19 @@ terraform apply -target="module.microservices_secrets"
 
 # =========================
 # ArgoCD
-# GitOps e Deploy contínuo
+# Instalação do ArgoCD
 # =========================
 
 terraform plan -target="module.argocd"
 terraform apply -target="module.argocd"
+
+# =========================
+# ArgoCD Applications
+# Criação das aplicações GitOps
+# =========================
+
+terraform plan -target="module.argocd_applications"
+terraform apply -target="module.argocd_applications"
 
 # =========================
 # Validação Final

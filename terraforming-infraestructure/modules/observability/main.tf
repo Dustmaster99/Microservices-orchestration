@@ -12,6 +12,9 @@ resource "helm_release" "kube_prometheus_stack" {
   version    = var.kube_prometheus_stack_chart_version
 
   create_namespace = false
+  timeout = 900
+  wait    = true
+  atomic  = false
 
   values = [
     yamlencode({
@@ -79,6 +82,9 @@ resource "helm_release" "loki_stack" {
   version    = var.loki_stack_chart_version
 
   create_namespace = false
+  timeout = 900
+  wait    = true
+  atomic  = false
 
   values = [
     yamlencode({
@@ -113,6 +119,9 @@ resource "helm_release" "otel_collector" {
   version    = var.otel_collector_chart_version
 
   create_namespace = false
+  timeout = 900
+  wait    = true
+  atomic  = false
 
   values = [
     yamlencode({
