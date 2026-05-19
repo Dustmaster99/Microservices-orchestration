@@ -28,6 +28,8 @@ spec:
           envFrom:
             - secretRef:
                 name: flag-secret
+                
+                image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/flag-service:9836061
 
           env:
             - name: OTEL_SERVICE_NAME
