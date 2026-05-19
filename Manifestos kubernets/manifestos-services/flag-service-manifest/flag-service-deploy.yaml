@@ -29,7 +29,7 @@ spec:
             - secretRef:
                 name: flag-secret
                 
-                image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/flag-service:9836061
+                image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/flag-service:5a85d76
 
           env:
             - name: OTEL_SERVICE_NAME
