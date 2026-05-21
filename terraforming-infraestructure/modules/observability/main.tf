@@ -111,6 +111,19 @@ resource "helm_release" "loki_stack" {
   ]
 }
 
+resource "kubernetes_secret_v1" "datadog" {
+  metadata {
+    name      = var.datadog_secret_name
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+  }
+
+  data = {
+    DD_API_KEY = var.datadog_api_key
+  }
+
+  type = "Opaque"
+}
+
 resource "helm_release" "otel_collector" {
   name       = var.otel_collector_release_name
   namespace  = kubernetes_namespace.monitoring.metadata[0].name
@@ -119,15 +132,14 @@ resource "helm_release" "otel_collector" {
   version    = var.otel_collector_chart_version
 
   create_namespace = false
-  timeout = 900
-  wait    = true
-  atomic  = false
+  timeout          = 900
+  wait             = true
+  atomic           = false
 
   values = [
     yamlencode({
       fullnameOverride = var.otel_collector_release_name
-
-      mode = var.otel_collector_mode
+      mode             = var.otel_collector_mode
 
       image = {
         repository = "otel/opentelemetry-collector-contrib"
@@ -137,6 +149,18 @@ resource "helm_release" "otel_collector" {
         enabled = true
         type    = "ClusterIP"
       }
+
+      extraEnvs = [
+        {
+          name = "DD_API_KEY"
+          valueFrom = {
+            secretKeyRef = {
+              name = var.datadog_secret_name
+              key  = "DD_API_KEY"
+            }
+          }
+        }
+      ]
 
       ports = {
         otlp = {
@@ -191,6 +215,13 @@ resource "helm_release" "otel_collector" {
             endpoint = "0.0.0.0:8889"
           }
 
+          datadog = {
+            api = {
+              key  = "$${env:DD_API_KEY}"
+              site = var.datadog_site
+            }
+          }
+
           otlphttp = {
             endpoint = var.loki_otlp_endpoint
 
@@ -206,10 +237,16 @@ resource "helm_release" "otel_collector" {
 
         service = {
           pipelines = {
+            traces = {
+              receivers  = ["otlp"]
+              processors = ["memory_limiter", "batch"]
+              exporters  = ["datadog", "debug"]
+            }
+
             metrics = {
               receivers  = ["otlp"]
               processors = ["memory_limiter", "batch"]
-              exporters  = ["prometheus", "debug"]
+              exporters  = ["prometheus", "datadog", "debug"]
             }
 
             logs = {
@@ -224,6 +261,7 @@ resource "helm_release" "otel_collector" {
   ]
 
   depends_on = [
-    helm_release.loki_stack
+    helm_release.loki_stack,
+    kubernetes_secret_v1.datadog
   ]
 }

@@ -225,6 +225,11 @@ module "observability" {
   promtail_enabled                    = true
 
   loki_otlp_endpoint                  = "http://loki.monitoring.svc.cluster.local:3100/otlp"
+
+  datadog_api_key     = var.datadog_api_key
+  datadog_site        = var.datadog_site
+  datadog_secret_name = var.datadog_secret_name
+
 }
 
 module "argocd" {

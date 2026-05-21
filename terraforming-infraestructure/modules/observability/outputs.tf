@@ -62,3 +62,8 @@ output "otel_collector_prometheus_scrape_endpoint" {
   description = "Endpoint onde o Prometheus coleta métricas exportadas pelo OTel."
   value       = "${var.otel_collector_release_name}.${var.namespace}.svc.cluster.local:8889"
 }
+
+output "datadog_secret_name" {
+  description = "Nome do secret usado para integração com Datadog."
+  value       = kubernetes_secret_v1.datadog.metadata[0].name
+}

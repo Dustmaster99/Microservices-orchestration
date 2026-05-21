@@ -186,3 +186,21 @@ variable "argocd_applications" {
     destination_namespace = string
   }))
 }
+
+variable "datadog_api_key" {
+  description = "API Key do Datadog."
+  type        = string
+  sensitive   = true
+}
+
+variable "datadog_site" {
+  description = "Site do Datadog."
+  type        = string
+  default     = "datadoghq.com"
+}
+
+variable "datadog_secret_name" {
+  description = "Nome do secret Kubernetes usado pelo Datadog."
+  type        = string
+  default     = "datadog-secret"
+}

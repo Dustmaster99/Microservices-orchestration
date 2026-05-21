@@ -106,3 +106,21 @@ variable "loki_otlp_endpoint" {
   type        = string
   default     = "http://loki.monitoring.svc.cluster.local:3100/otlp"
 }
+
+variable "datadog_api_key" {
+  description = "API Key do Datadog usada pelo OpenTelemetry Collector."
+  type        = string
+  sensitive   = true
+}
+
+variable "datadog_site" {
+  description = "Site do Datadog. Use datadoghq.com ou datadoghq.eu."
+  type        = string
+  default     = "datadoghq.com"
+}
+
+variable "datadog_secret_name" {
+  description = "Nome do secret Kubernetes com a API Key do Datadog."
+  type        = string
+  default     = "datadog-secret"
+}

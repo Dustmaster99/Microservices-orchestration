@@ -254,3 +254,65 @@ resource "kubernetes_manifest" "ingress_nginx_controller" {
     kubernetes_manifest.ingress_nginx_service
   ]
 }
+
+resource "kubernetes_manifest" "ingress_nginx_class" {
+  manifest = {
+    apiVersion = "networking.k8s.io/v1"
+    kind       = "IngressClass"
+
+    metadata = {
+      name = "nginx"
+    }
+
+    spec = {
+      controller = "k8s.io/ingress-nginx"
+    }
+  }
+
+  depends_on = [
+    kubernetes_manifest.ingress_nginx_controller
+  ]
+}
+
+resource "kubernetes_manifest" "evaluation_ingress" {
+  manifest = {
+    apiVersion = "networking.k8s.io/v1"
+    kind       = "Ingress"
+
+    metadata = {
+      name      = "evaluation-ingress"
+      namespace = "fiap-microservices"
+    }
+
+    spec = {
+      ingressClassName = "nginx"
+
+      rules = [
+        {
+          http = {
+            paths = [
+              {
+                path     = "/"
+                pathType = "Prefix"
+
+                backend = {
+                  service = {
+                    name = "evaluation-service"
+
+                    port = {
+                      number = 8004
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+
+  depends_on = [
+    kubernetes_manifest.ingress_nginx_class
+  ]
+}
