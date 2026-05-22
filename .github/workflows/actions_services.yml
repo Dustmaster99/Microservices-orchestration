@@ -406,7 +406,7 @@ jobs:
 
       - name: Update all GitOps manifests
         run: |
-          REGISTRY="657010996850.dkr.ecr.us-east-1.amazonaws.com"
+          REGISTRY="939332567298.dkr.ecr.us-east-1.amazonaws.com"
 
           sed -i "s#image: .*analytics-service:.*#image: ${REGISTRY}/fiap-microservices/analytics-service:${IMAGE_TAG}#g" "Manifestos kubernets/manifestos-services/analytics-service-manifest/analytics-service-deploy.yaml"
           sed -i "s#image: .*auth-service:.*#image: ${REGISTRY}/fiap-microservices/auth-service:${IMAGE_TAG}#g" "Manifestos kubernets/manifestos-services/auth-service-manifest/auth-service-deploy.yaml"
