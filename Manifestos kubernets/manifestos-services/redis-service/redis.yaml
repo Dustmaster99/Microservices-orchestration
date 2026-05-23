@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: redis-server
-          image: 657010996850.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/redis:7
+          image: 939332567298.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/redis:7
           ports:
             - containerPort: 6379
           command: ["redis-server", "--bind", "0.0.0.0"]
