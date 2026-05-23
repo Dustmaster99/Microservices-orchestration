@@ -1,8 +1,7 @@
 name: Self-Healing Auth Service
 
 on:
-  repository_dispatch:
-    types: [auth-service-5xx-alert]
+  workflow_dispatch:
 
 jobs:
   restart-auth-service:
@@ -17,6 +16,9 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
+      - name: Validate AWS credentials
+        run: aws sts get-caller-identity
+
       - name: Configure kubeconfig
         run: |
           aws eks update-kubeconfig \
@@ -25,10 +27,8 @@ jobs:
 
       - name: Restart auth-service
         run: |
-          kubectl rollout restart deployment/auth-service \
-            -n fiap-microservices
+          kubectl rollout restart deployment/auth-service -n fiap-microservices
 
       - name: Wait for rollout
         run: |
-          kubectl rollout status deployment/auth-service \
-            -n fiap-microservices
+          kubectl rollout status deployment/auth-service -n fiap-microservices
