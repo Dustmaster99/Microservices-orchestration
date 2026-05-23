@@ -21,7 +21,7 @@ spec:
         - name: auth-service
 
           
-          image: 939332567298.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:7c1e495
+          image: 939332567298.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/auth-service:6b92e5a
 
 
           ports:
