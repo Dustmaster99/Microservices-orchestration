@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: analytics-service
-          image: 939332567298.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/analytics-service:7c1e495
+          image: 939332567298.dkr.ecr.us-east-1.amazonaws.com/fiap-microservices/analytics-service:6b92e5a
           ports:
             - containerPort: 8005
           envFrom:
